@@ -25,7 +25,7 @@ const int chipSelect = 10; // Für Datenlogger Modul am Arduino Uno so lassen
 RTC_DS1307 rtc;
 //rtc.adjust(DateTime(2020,16,10,14,39,00));
 
-//#define TasterPin 8
+#define TasterPin 8
 
 char SerialBytein;
 char HC12Bytein;
@@ -43,6 +43,8 @@ String Batt = "";
 String kennung = "";
 String rest = "";
 
+
+
 boolean HC12End = false;
 int laenge;
 int fall = 0;
@@ -59,17 +61,17 @@ void setup() {
   lcd.setBacklight(LOW);
   lcd.setBacklight(HIGH);
   lcd.setCursor(0, 0);
-  lcd.print("Init SD-Card...");
+  lcd.print(F("Init SD-Card..."));
   //if (!SD.begin(chipSelect)){lcd.setCursor(0,1);lcd.print("fehlgeschlagen!");while (1);}
-  lcd.setCursor(0, 1); lcd.print("war erfolgreich!");
+  lcd.setCursor(0, 1); lcd.print(F("war erfolgreich!"));
   delay(3000);
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Init RTC...");
+  lcd.print(F("Init RTC..."));
   if (! rtc.begin()) {
     lcd.setCursor(0, 1);
-    lcd.print("RTC nicht gefunden!");
+    lcd.print(F("RTC nicht gefunden!"));
     while (1);
   }
   //rtc.adjust(DateTime(2020,10,16,18,46,00)); //ACHTUNG: Nur zum Setzten der RTC
@@ -77,24 +79,25 @@ void setup() {
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Abfrage RTC...");
+  lcd.print(F("Abfrage RTC..."));
   if (! rtc.isrunning()) {
-    lcd.setCursor(0, 1); lcd.print("RTC laeuft nicht!  ");
-    lcd.setCursor(0, 2); lcd.print("Bitte initalisieren"); while (1);
+    lcd.setCursor(0, 1); lcd.print(F("RTC laeuft nicht!  "));
+    lcd.setCursor(0, 2); lcd.print(F("Bitte initalisieren")); 
+    while (1);
   }
-  lcd.setCursor(0, 1); lcd.print("RTC funktionsbereit");
+  lcd.setCursor(0, 1); lcd.print(F("RTC funktionsbereit"));
   delay(3000);
 
   if (!(SD.exists(LogFileName))) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("File oeffnen...");
+    lcd.print(F("File oeffnen..."));
     File LogFilePtr = SD.open(LogFileName, FILE_WRITE); // Datei zum Schreiben öffnen
     if (LogFilePtr) { // Wenn Datei zum schreiben bereit ist, schreibe Kopfzeile
-      LogFilePtr.println("Tag;Monat;Jahr;Std;Min;");//Stock;temp_out;hum_out;temp_in;hum_in;Gewicht;Batt;");
+      LogFilePtr.println(F("Tag;Monat;Jahr;Std;Min;"));//Stock;temp_out;hum_out;temp_in;hum_in;Gewicht;Batt;");
       //LogFilePtr.println("Start");//Stock;temp_out;hum_out;temp_in;hum_in;Gewicht;Batt;");
       lcd.setCursor(0, 1);
-      lcd.print("LogDatei erzeugt...");
+      lcd.print(F("LogDatei erzeugt..."));
       LogFilePtr.close(); // Datei schließen
     }
   }
@@ -104,29 +107,29 @@ void setup() {
   //pinMode(TasterPin, INPUT_PULLUP);
   HC12.begin(9600);               // Serial port to HC12
   if (HC12.isListening()) {
-    Serial.println("OK");
+    Serial.println(F("OK"));
   }
   else {
-    Serial.println("NOK");
+    Serial.println(F("NOK"));
   }
 
   //test HC-12
-  Serial.print("HC-12 available... ");
+  Serial.print(F("HC-12 available... "));
   HC12.write("AT+DEFAULT");
   delay(1000);
   while (HC12.available() > 0) {
     Serial.write(HC12.read());
   }
   Serial.println();
-  Serial.println("initialization done");
+  Serial.println(F("initialization done"));
 
   HC12ReadBuffer.reserve(64);
   //SerialReadBuffer.reserve(64);
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("    BEE - LOGGER");
+  lcd.print(F("    BEE - LOGGER"));
   lcd.setCursor(0, 2);
-  lcd.print("warte auf Daten....");
+  lcd.print(F("warte auf Daten...."));
 
 } //End SetUp
 //***************************************************
@@ -147,14 +150,14 @@ void loop() {
   }
   if (HC12End) {
     Serial.println(HC12ReadBuffer);
-    Serial.println("----------------");
+    Serial.println(F("----------------"));
     kennung = HC12ReadBuffer.substring(0, 1); // Erstes Zeichen ist Kennung
     rest = HC12ReadBuffer.substring(1);     // alle Zeichen ab dem Ersten  sind Daten
 
     if (kennung == "A") {
       Stocknummer = rest;
       lcd.setCursor(18, 3);
-      lcd.print("#");
+      lcd.print(F("#"));
       lcd.print(Stocknummer);
     }
     if (kennung == "B") {
